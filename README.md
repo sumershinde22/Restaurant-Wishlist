@@ -109,6 +109,26 @@ single-responsibility modules.
 4. Mark a restaurant as visited and optionally add a short review - it moves to
    the **Visited** section.
 
+## Deployment (Render)
+
+The app is a single Node service that serves both the API and the static
+frontend, so it can run on any Node host. It is **not** compatible with static
+hosts like GitHub Pages, which cannot run the Express server.
+
+To deploy on [Render](https://render.com):
+
+1. **Atlas → Network Access:** add `0.0.0.0/0` so Render's dynamic IPs can
+   connect to your cluster.
+2. In Render, create a **Web Service** from this repo (or use the included
+   [`render.yaml`](render.yaml) blueprint). Settings:
+   - Build command: `npm install`
+   - Start command: `npm start`
+3. Add the environment variables `MONGO_USER`, `MONGO_PASSWORD`, `MONGO_CLUSTER`,
+   and `MONGO_DB` in the Render dashboard (the same values as your local `.env`).
+   `PORT` is provided by Render automatically.
+4. Deploy. Render builds the service and serves it at a public `*.onrender.com`
+   URL.
+
 ## Formatting
 
 The codebase is formatted with [Prettier](https://prettier.io):
