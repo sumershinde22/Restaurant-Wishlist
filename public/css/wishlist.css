@@ -1,0 +1,65 @@
+.entry {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  box-shadow: 0 1px 2px rgba(33, 28, 24, 0.05);
+}
+
+.entry.visited {
+  background: var(--success-soft);
+  border-color: #d8e5dc;
+}
+
+.entry-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.entry-title {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.entry-meta {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.entry-review {
+  margin-top: 0.6rem;
+  font-style: italic;
+  color: var(--success);
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--success);
+}
+
+.badge-cuisine {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.badge-visited {
+  background: var(--success);
+  color: #fff;
+}
+
+.stat-number {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.entry-empty {
+  color: var(--muted);
+  font-style: italic;
+}

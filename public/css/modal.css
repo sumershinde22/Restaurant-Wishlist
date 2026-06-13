@@ -1,0 +1,14 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(33, 28, 24, 0.45);
+  z-index: 1050;
+}
+
+.modal-panel {
+  width: 100%;
+  max-width: 420px;
+}

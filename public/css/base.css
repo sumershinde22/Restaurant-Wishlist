@@ -1,0 +1,74 @@
+:root {
+  --bg: #f5f2ec;
+  --surface: #ffffff;
+  --ink: #211c18;
+  --muted: #6f665c;
+  --line: #e6dfd4;
+  --accent: #8a2433;
+  --accent-dark: #6f1c29;
+  --accent-soft: #f6ebec;
+  --success: #3f6b4f;
+  --success-soft: #eef4ef;
+  --radius: 14px;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.app-main {
+  max-width: 760px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Recolor Bootstrap's buttons to the claret palette (5.3 CSS variables). */
+.btn-primary {
+  --bs-btn-bg: var(--accent);
+  --bs-btn-border-color: var(--accent);
+  --bs-btn-hover-bg: var(--accent-dark);
+  --bs-btn-hover-border-color: var(--accent-dark);
+  --bs-btn-active-bg: var(--accent-dark);
+  --bs-btn-active-border-color: var(--accent-dark);
+  --bs-btn-disabled-bg: var(--accent);
+  --bs-btn-disabled-border-color: var(--accent);
+}
+
+.btn-outline-secondary {
+  --bs-btn-color: var(--ink);
+  --bs-btn-border-color: var(--line);
+  --bs-btn-hover-color: var(--ink);
+  --bs-btn-hover-bg: var(--bg);
+  --bs-btn-hover-border-color: var(--line);
+  --bs-btn-active-color: var(--ink);
+  --bs-btn-active-bg: var(--bg);
+  --bs-btn-active-border-color: var(--line);
+}
+
+.btn-outline-danger {
+  --bs-btn-color: var(--accent);
+  --bs-btn-border-color: var(--accent);
+  --bs-btn-hover-bg: var(--accent);
+  --bs-btn-hover-border-color: var(--accent);
+  --bs-btn-active-bg: var(--accent-dark);
+  --bs-btn-active-border-color: var(--accent-dark);
+}
+
+.form-control:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.2rem var(--accent-soft);
+}
