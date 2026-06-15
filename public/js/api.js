@@ -57,3 +57,7 @@ export function setVisited(id, visited, review) {
 export function deleteEntry(id) {
   return request('/api/wishlist/' + id, { method: 'DELETE' });
 }
+
+export function getBrowseUsers() {
+  return request('/api/browse');
+}

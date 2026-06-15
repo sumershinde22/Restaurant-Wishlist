@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/profile.css" />
     <link rel="stylesheet" href="css/wishlist.css" />
+    <link rel="stylesheet" href="css/browse.css" />
     <link rel="stylesheet" href="css/modal.css" />
   </head>
   <body>
@@ -247,6 +248,35 @@
           <ul id="visited-list" class="list-unstyled mb-0"></ul>
         </div>
       </section>
+
+      <!-- Signed-in view: browse other users' wishlists (US-03). -->
+      <div class="mb-4">
+        <h2 class="border-bottom pb-2 mb-3">Other Users' Wishlists</h2>
+        <div id="browse-section" class="browse-card">
+          <div class="browse-card">
+            <div class="p-4 border-bottom">
+              <p class="text-secondary mb-0">Discover new restaurants.</p>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table browse-table align-middle">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Restaurants Wishlisted</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="browse-body"></tbody>
+              </table>
+            </div>
+
+            <p id="browse-empty" class="browse-empty p-4 mb-0 hidden">
+              No users to show yet.
+            </p>
+          </div>
+        </div>
+      </div>
     </main>
 
     <!-- Shared modal used for confirmations and reviews. -->
