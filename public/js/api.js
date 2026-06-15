@@ -61,3 +61,11 @@ export function deleteEntry(id) {
 export function getBrowseUsers() {
   return request('/api/browse');
 }
+
+export function saveEntry(userId, restaurantId) {
+  return request('/api/wishlist/save', {
+    method: 'POST',
+    headers: jsonHeaders,
+    body: JSON.stringify({ userId, restaurantId }),
+  });
+}

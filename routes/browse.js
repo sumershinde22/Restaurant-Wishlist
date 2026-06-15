@@ -15,7 +15,7 @@ function publicBrowseUser(user) {
 }
 
 // Browse all users and their basic wishlist info (US-03).
-// note: wishlists with 0 items will not appear.
+// current user's wishlist, and wishlists with 0 entries, will not show up.
 router.get('/', async (req, res) => {
   const users = await collections
     .users()

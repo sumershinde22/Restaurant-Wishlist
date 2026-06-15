@@ -1,6 +1,8 @@
-import { getBrowseUsers, getWishlist } from './api.js';
+import { getBrowseUsers, getWishlist, saveEntry } from './api.js';
 
-// Browse module: show other users and preview their wishlists in a modal.
+// Browse module: show other users and preview their wishlists in a modal (US-03).
+// Also, provides a feature to save an entry from another user's wishlist. (US-04)
+// current user's wishlist, and wishlists with 0 entries, will not show up.
 const browseSection = document.getElementById('browse-section');
 const browseBody = document.getElementById('browse-body');
 const browseEmpty = document.getElementById('browse-empty');
@@ -192,7 +194,16 @@ export function initBrowse() {
     save.type = 'button';
     save.className = 'btn btn-sm btn-primary';
     save.textContent = 'Save to my wishlist';
-
+    save.addEventListener('click', async () => {
+      try {
+        await saveEntry(currentUser._id, entry.restaurant._id);
+        save.textContent = 'Succcess: Saved!';
+        save.disabled = true;
+      } catch (err) {
+        save.textContent = err.message;
+        save.disabled = true;
+      }
+    });
     actions.appendChild(save);
     li.appendChild(actions);
 
@@ -217,6 +228,7 @@ export function initBrowse() {
     overlay.classList.add('hidden');
     panel.classList.remove('browse-modal-panel');
     panel.innerHTML = '';
+    window.location.reload();
   }
 
   return {

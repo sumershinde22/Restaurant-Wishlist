@@ -134,10 +134,57 @@ router.delete('/:id', async (req, res) => {
     return res.status(404).json({ error: 'Wishlist entry not found.' });
   }
 
-  await collections.restaurants().deleteOne({ _id: entry.restaurantId });
   await collections.wishlists().deleteOne({ _id: id });
 
   res.json({ ok: true });
+});
+
+// US-04: Save a wishlist entry from another person's wishlist to my wishlist.
+router.post('/save', async (req, res) => {
+  const userId = toObjectId(req.body.userId);
+  const restaurantId = toObjectId(req.body.restaurantId);
+
+  if (!userId || !restaurantId) {
+    return res
+      .status(400)
+      .json({ error: 'Error: A valid userId and restaurantId are required.' });
+  }
+
+  const existing = await collections.wishlists().findOne({
+    userId,
+    restaurantId,
+  });
+
+  if (existing) {
+    return res
+      .status(409)
+      .json({ error: 'Error: This restaurant is already on your wishlist.' });
+  }
+
+  const restaurant = await collections.restaurants().findOne({
+    _id: restaurantId,
+  });
+
+  if (!restaurant) {
+    return res.status(404).json({ error: 'Error: Restaurant not found.' });
+  }
+
+  const entry = {
+    userId,
+    restaurantId,
+    notes: '',
+    visited: false,
+    review: '',
+    createdAt: new Date(),
+  };
+
+  const { insertedId } = await collections.wishlists().insertOne(entry);
+
+  res.status(201).json({
+    _id: insertedId,
+    ...entry,
+    restaurant,
+  });
 });
 
 export default router;
