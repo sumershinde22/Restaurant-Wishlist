@@ -10,7 +10,7 @@ const browseEmpty = document.getElementById('browse-empty');
 const overlay = document.getElementById('modal-overlay');
 const panel = document.getElementById('modal-panel');
 
-export function initBrowse() {
+export function initBrowse(wishlist) {
   let currentUser = null;
 
   async function refresh() {
@@ -199,6 +199,7 @@ export function initBrowse() {
         await saveEntry(currentUser._id, entry.restaurant._id);
         save.textContent = 'Succcess: Saved!';
         save.disabled = true;
+        await wishlist.refresh();
       } catch (err) {
         save.textContent = err.message;
         save.disabled = true;
@@ -228,7 +229,6 @@ export function initBrowse() {
     overlay.classList.add('hidden');
     panel.classList.remove('browse-modal-panel');
     panel.innerHTML = '';
-    window.location.reload();
   }
 
   return {

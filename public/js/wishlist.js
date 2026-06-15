@@ -209,5 +209,8 @@ export function initWishlist() {
         statVisited.textContent = '0';
       }
     },
+    refresh() {
+      return refresh();
+    },
   };
 }

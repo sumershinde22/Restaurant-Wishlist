@@ -29,7 +29,7 @@ single-responsibility modules.
 
 ## Screenshot
 
-![Restaurant Wishlist screenshot](docs/screenshot.png)
+![Restaurant Wishlist Screenshot](screenshot.png)
 
 ## Tech Stack
 
@@ -51,17 +51,20 @@ single-responsibility modules.
 ├── routes/
 │   ├── users.js           # Register + login endpoints (US-01)
 │   └── wishlist.js        # Wishlist CRUD + visited (US-01, US-02)
+│   └── browse.js          # View/save other wishlist entries (US-03, US-04)
 └── public/
     ├── index.html
     ├── css/               # One stylesheet per module
     │   ├── base.css
     │   ├── profile.css
     │   ├── wishlist.css
+    │   ├── browse.css
     │   └── modal.css
     └── js/                # One module per concern
         ├── api.js         # Fetch wrapper
         ├── profile.js     # Account auth (sign in / register / sign out)
         ├── wishlist.js    # Wishlist UI
+        ├── browse.js      # View/save other wishlist entries UI
         ├── modal.js       # Reusable confirm / review dialog
         └── main.js        # Wires the modules together
 ```
@@ -108,6 +111,7 @@ single-responsibility modules.
 3. Edit or delete any entry.
 4. Mark a restaurant as visited and optionally add a short review - it moves to
    the **Visited** section.
+5. Browse other users' wishlists, and save any wishlist entry into your own wishlist.
 
 ## Deployment (Render)
 
