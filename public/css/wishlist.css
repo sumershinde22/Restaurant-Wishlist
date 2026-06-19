@@ -1,3 +1,17 @@
+/* Wishlist lists flow into responsive columns to use the full width. */
+#unvisited-list,
+#visited-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+#unvisited-list .entry-empty,
+#visited-list .entry-empty {
+  grid-column: 1 / -1;
+}
+
 .entry {
   background: var(--surface);
   border: 1px solid var(--line);

@@ -91,7 +91,7 @@ export function initWishlist() {
 
   function renderEntry(entry) {
     const li = document.createElement('li');
-    li.className = entry.visited ? 'entry visited mb-3' : 'entry mb-3';
+    li.className = entry.visited ? 'entry visited' : 'entry';
 
     const head = document.createElement('div');
     head.className = 'entry-head';

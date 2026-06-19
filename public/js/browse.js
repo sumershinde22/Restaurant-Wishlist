@@ -6,18 +6,35 @@ import { getBrowseUsers, getWishlist, saveEntry } from './api.js';
 const browseSection = document.getElementById('browse-section');
 const browseBody = document.getElementById('browse-body');
 const browseEmpty = document.getElementById('browse-empty');
+const userSearch = document.getElementById('user-search');
 
 const overlay = document.getElementById('modal-overlay');
 const panel = document.getElementById('modal-panel');
 
 export function initBrowse(wishlist) {
   let currentUser = null;
+  let allUsers = [];
 
   async function refresh() {
     const users = await getBrowseUsers();
-    const otherUsers = users.filter((user) => user._id !== currentUser._id);
-    renderUsers(otherUsers);
+    allUsers = users.filter((user) => user._id !== currentUser._id);
+    renderFiltered();
   }
+
+  // Filter the browsable users by the search box (name or @username).
+  function renderFiltered() {
+    const q = userSearch.value.trim().toLowerCase();
+    const filtered = q
+      ? allUsers.filter(
+          (u) =>
+            u.displayName.toLowerCase().includes(q) ||
+            u.username.toLowerCase().includes(q)
+        )
+      : allUsers;
+    renderUsers(filtered);
+  }
+
+  userSearch.addEventListener('input', renderFiltered);
 
   function renderUsers(users) {
     browseBody.innerHTML = '';
@@ -62,36 +79,39 @@ export function initBrowse(wishlist) {
     panel.classList.add('browse-modal-panel');
     panel.innerHTML = '';
 
-    const close = document.createElement('button');
-    close.type = 'button';
-    close.className = 'btn btn-outline-secondary';
-    close.textContent = 'Close';
-    close.addEventListener('click', closeModal);
-
-    panel.append(
-      makeModalHeader(user),
+    const body = document.createElement('div');
+    body.className = 'browse-modal-body';
+    body.append(
       makeStats(unvisited.length, visited.length),
       makeSection('Want to Try', unvisited, 'Nothing here yet.'),
-      makeSection('Visited', visited, "They haven't visited anything yet."),
-      makeFooter(close)
+      makeSection('Visited', visited, "They haven't visited anything yet.")
     );
 
+    panel.append(makeModalHeader(user), body);
     overlay.classList.remove('hidden');
   }
 
   function makeModalHeader(user) {
     const header = document.createElement('div');
-    header.className = 'mb-4';
+    header.className = 'browse-modal-header';
 
+    const text = document.createElement('div');
     const title = document.createElement('h2');
     title.className = 'mb-1';
-    title.textContent = `Browsing ${user.displayName}'s wishlist`;
-
+    title.textContent = `${user.displayName}'s wishlist`;
     const subtitle = document.createElement('p');
     subtitle.className = 'text-secondary mb-0';
     subtitle.textContent = `@${user.username}`;
+    text.append(title, subtitle);
 
-    header.append(title, subtitle);
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'browse-modal-close';
+    close.setAttribute('aria-label', 'Close');
+    close.textContent = '×';
+    close.addEventListener('click', closeModal);
+
+    header.append(text, close);
     return header;
   }
 
@@ -132,7 +152,7 @@ export function initBrowse(wishlist) {
     title.textContent = titleText;
 
     const list = document.createElement('ul');
-    list.className = 'list-unstyled mb-0';
+    list.className = 'browse-entry-list';
 
     if (entries.length === 0) {
       const empty = document.createElement('li');
@@ -151,7 +171,7 @@ export function initBrowse(wishlist) {
 
   function renderEntry(entry) {
     const li = document.createElement('li');
-    li.className = entry.visited ? 'entry visited mb-3' : 'entry mb-3';
+    li.className = entry.visited ? 'entry visited' : 'entry';
 
     const head = document.createElement('div');
     head.className = 'entry-head';
@@ -220,13 +240,6 @@ export function initBrowse(wishlist) {
     return badge;
   }
 
-  function makeFooter(closeButton) {
-    const footer = document.createElement('div');
-    footer.className = 'd-flex justify-content-end';
-    footer.appendChild(closeButton);
-    return footer;
-  }
-
   function closeModal() {
     overlay.classList.add('hidden');
     panel.classList.remove('browse-modal-panel');
@@ -237,9 +250,11 @@ export function initBrowse(wishlist) {
     setUser(user) {
       currentUser = user;
       browseSection.classList.toggle('hidden', !user);
+      userSearch.value = '';
       if (user) {
         refresh();
       } else {
+        allUsers = [];
         browseBody.innerHTML = '';
       }
     },

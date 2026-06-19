@@ -201,18 +201,20 @@
                   <label class="form-label" for="entry-cuisine">Cuisine</label>
                   <input type="text" class="form-control" id="entry-cuisine" />
                 </div>
-              </div>
-              <div class="mb-3">
-                <label class="form-label" for="entry-location">Location</label>
-                <input type="text" class="form-control" id="entry-location" />
-              </div>
-              <div class="mb-3">
-                <label class="form-label" for="entry-notes">Notes</label>
-                <textarea
-                  class="form-control"
-                  id="entry-notes"
-                  rows="2"
-                ></textarea>
+                <div class="col-12 col-sm-6 mb-3">
+                  <label class="form-label" for="entry-location"
+                    >Location</label
+                  >
+                  <input type="text" class="form-control" id="entry-location" />
+                </div>
+                <div class="col-12 col-sm-6 mb-3">
+                  <label class="form-label" for="entry-notes">Notes</label>
+                  <textarea
+                    class="form-control"
+                    id="entry-notes"
+                    rows="1"
+                  ></textarea>
+                </div>
               </div>
               <div class="d-flex gap-2">
                 <button type="submit" id="entry-submit" class="btn btn-primary">
@@ -274,30 +276,37 @@
         <div class="mb-4">
           <h2 class="border-bottom pb-2 mb-3">Discover New Restaurants</h2>
           <div id="browse-section" class="browse-card">
-            <div class="browse-card">
-              <div class="p-4 border-bottom">
-                <p class="text-secondary mb-0 discover-new-restaurants-label">
-                  Browse restaurants other users have wishlisted.
-                </p>
-              </div>
-
-              <div class="table-responsive">
-                <table class="table browse-table align-middle">
-                  <thead>
-                    <tr>
-                      <th>User</th>
-                      <th>Restaurants Wishlisted</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody id="browse-body"></tbody>
-                </table>
-              </div>
-
-              <p id="browse-empty" class="browse-empty p-4 mb-0 hidden">
-                No users to show yet.
+            <div
+              class="p-4 border-bottom d-flex flex-wrap gap-3 justify-content-between align-items-center"
+            >
+              <p class="text-secondary mb-0">
+                Browse restaurants other users have wishlisted.
               </p>
+              <input
+                type="search"
+                id="user-search"
+                class="form-control user-search"
+                placeholder="Search users by name…"
+                autocomplete="off"
+              />
             </div>
+
+            <div class="table-responsive">
+              <table class="table browse-table align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Restaurants Wishlisted</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="browse-body"></tbody>
+              </table>
+            </div>
+
+            <p id="browse-empty" class="browse-empty p-4 mb-0 hidden">
+              No users to show yet.
+            </p>
           </div>
         </div>
       </section>
