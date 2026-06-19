@@ -140,4 +140,62 @@ router.delete('/:id', async (req, res) => {
   res.json({ ok: true });
 });
 
+// US-04: Save a wishlist entry from another person's wishlist to my wishlist.
+// The restaurant is cloned so each wishlist owns its own copy — editing or
+// deleting a saved entry never affects the original owner's wishlist.
+router.post('/save', async (req, res) => {
+  const userId = toObjectId(req.body.userId);
+  const restaurantId = toObjectId(req.body.restaurantId);
+
+  if (!userId || !restaurantId) {
+    return res
+      .status(400)
+      .json({ error: 'A valid userId and restaurantId are required.' });
+  }
+
+  const source = await collections.restaurants().findOne({ _id: restaurantId });
+  if (!source) {
+    return res.status(404).json({ error: 'Restaurant not found.' });
+  }
+
+  // Reject if this user already saved this same source restaurant. Keyed on the
+  // source id (not the name) so it stays correct even after the copy is renamed.
+  const existing = await collections
+    .wishlists()
+    .findOne({ userId, savedFrom: restaurantId });
+  if (existing) {
+    return res
+      .status(409)
+      .json({ error: 'This restaurant is already on your wishlist.' });
+  }
+
+  // Clone the restaurant, then point a fresh wishlist entry at the copy.
+  const restaurant = {
+    name: source.name,
+    cuisine: source.cuisine,
+    location: source.location,
+    createdAt: new Date(),
+  };
+  const { insertedId: newRestaurantId } = await collections
+    .restaurants()
+    .insertOne(restaurant);
+
+  const entry = {
+    userId,
+    restaurantId: newRestaurantId,
+    savedFrom: restaurantId,
+    notes: '',
+    visited: false,
+    review: '',
+    createdAt: new Date(),
+  };
+  const { insertedId } = await collections.wishlists().insertOne(entry);
+
+  res.status(201).json({
+    _id: insertedId,
+    ...entry,
+    restaurant: { _id: newRestaurantId, ...restaurant },
+  });
+});
+
 export default router;

@@ -57,3 +57,15 @@ export function setVisited(id, visited, review) {
 export function deleteEntry(id) {
   return request('/api/wishlist/' + id, { method: 'DELETE' });
 }
+
+export function getBrowseUsers() {
+  return request('/api/browse');
+}
+
+export function saveEntry(userId, restaurantId) {
+  return request('/api/wishlist/save', {
+    method: 'POST',
+    headers: jsonHeaders,
+    body: JSON.stringify({ userId, restaurantId }),
+  });
+}
