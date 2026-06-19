@@ -6,6 +6,8 @@ import {
   deleteEntry,
 } from './api.js';
 import { confirmDialog, reviewDialog } from './modal.js';
+import { attachPlaceSearch } from './places.js';
+import { getWeather, weatherText } from './weather.js';
 
 // Wishlist module: add/edit/delete entries (US-01) and mark them visited (US-02).
 const form = document.getElementById('wishlist-form');
@@ -15,12 +17,17 @@ const nameInput = document.getElementById('entry-name');
 const cuisineInput = document.getElementById('entry-cuisine');
 const locationInput = document.getElementById('entry-location');
 const notesInput = document.getElementById('entry-notes');
+const latInput = document.getElementById('entry-lat');
+const lonInput = document.getElementById('entry-lon');
+const categoryInput = document.getElementById('entry-category');
+const placeResults = document.getElementById('place-results');
 const submitBtn = document.getElementById('entry-submit');
 const cancelBtn = document.getElementById('entry-cancel');
 const unvisitedList = document.getElementById('unvisited-list');
 const visitedList = document.getElementById('visited-list');
 const statUnvisited = document.getElementById('stat-unvisited');
 const statVisited = document.getElementById('stat-visited');
+const surpriseBtn = document.getElementById('surprise-btn');
 
 export function initWishlist() {
   let currentUser = null;
@@ -33,12 +40,39 @@ export function initWishlist() {
 
     statUnvisited.textContent = unvisited.length;
     statVisited.textContent = visited.length;
+    surpriseBtn.disabled = unvisited.length === 0;
     renderList(
       unvisitedList,
       unvisited,
       'Nothing here yet - add a place above.'
     );
     renderList(visitedList, visited, "You haven't visited anything yet.");
+    updateWeather();
+  }
+
+  // Fetch current weather for every rendered entry that has coordinates, in one
+  // batched request, then fill in each card's placeholder.
+  async function updateWeather() {
+    const nodes = [...document.querySelectorAll('.entry-weather[data-lat]')];
+    if (nodes.length === 0) return;
+    const points = nodes.map((n) => ({
+      lat: n.dataset.lat,
+      lon: n.dataset.lon,
+    }));
+    let results;
+    try {
+      results = await getWeather(points);
+    } catch {
+      nodes.forEach((n) => n.remove());
+      return;
+    }
+    nodes.forEach((node, i) => {
+      if (results[i]) {
+        node.textContent = weatherText(results[i]);
+      } else {
+        node.remove();
+      }
+    });
   }
 
   function renderList(listEl, entries, emptyText) {
@@ -81,6 +115,23 @@ export function initWishlist() {
       li.appendChild(meta);
     }
 
+    if (entry.restaurant.category) {
+      const category = document.createElement('p');
+      category.className = 'entry-category';
+      category.textContent =
+        '🍴 ' + entry.restaurant.category.replace(/_/g, ' ');
+      li.appendChild(category);
+    }
+
+    if (entry.restaurant.lat != null && entry.restaurant.lon != null) {
+      const weather = document.createElement('p');
+      weather.className = 'entry-weather';
+      weather.dataset.lat = entry.restaurant.lat;
+      weather.dataset.lon = entry.restaurant.lon;
+      weather.textContent = 'Checking weather…';
+      li.appendChild(weather);
+    }
+
     if (entry.notes) {
       const notes = document.createElement('p');
       notes.className = 'entry-notes mt-2 mb-0';
@@ -114,6 +165,10 @@ export function initWishlist() {
     );
     li.appendChild(actions);
 
+    if (entry.restaurant.lat != null && entry.restaurant.lon != null) {
+      li.appendChild(makeMap(entry.restaurant.lat, entry.restaurant.lon));
+    }
+
     return li;
   }
 
@@ -131,6 +186,35 @@ export function initWishlist() {
     button.textContent = label;
     button.addEventListener('click', onClick);
     return button;
+  }
+
+  // Embedded OpenStreetMap (no API key) centered on the restaurant's pin.
+  function makeMap(lat, lon) {
+    const d = 0.004;
+    const bbox = [lon - d, lat - d, lon + d, lat + d].join(',');
+
+    const wrap = document.createElement('div');
+    wrap.className = 'entry-map';
+
+    const iframe = document.createElement('iframe');
+    iframe.title = 'Map';
+    iframe.loading = 'lazy';
+    iframe.src =
+      'https://www.openstreetmap.org/export/embed.html?bbox=' +
+      encodeURIComponent(bbox) +
+      '&layer=mapnik&marker=' +
+      encodeURIComponent(lat + ',' + lon);
+    wrap.appendChild(iframe);
+
+    const link = document.createElement('a');
+    link.className = 'entry-map-link';
+    link.href = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=17/${lat}/${lon}`;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.textContent = 'View larger map ↗';
+    wrap.appendChild(link);
+
+    return wrap;
   }
 
   async function toggleVisited(entry) {
@@ -151,6 +235,9 @@ export function initWishlist() {
     cuisineInput.value = entry.restaurant.cuisine || '';
     locationInput.value = entry.restaurant.location || '';
     notesInput.value = entry.notes || '';
+    latInput.value = entry.restaurant.lat ?? '';
+    lonInput.value = entry.restaurant.lon ?? '';
+    categoryInput.value = entry.restaurant.category || '';
     formHeading.textContent = 'Edit Restaurant';
     submitBtn.textContent = 'Save changes';
     cancelBtn.classList.remove('hidden');
@@ -160,6 +247,9 @@ export function initWishlist() {
   function resetForm() {
     form.reset();
     idInput.value = '';
+    latInput.value = '';
+    lonInput.value = '';
+    categoryInput.value = '';
     formHeading.textContent = 'Add a Restaurant';
     submitBtn.textContent = 'Add to wishlist';
     cancelBtn.classList.add('hidden');
@@ -184,6 +274,9 @@ export function initWishlist() {
       cuisine: cuisineInput.value,
       location: locationInput.value,
       notes: notesInput.value,
+      lat: latInput.value,
+      lon: lonInput.value,
+      category: categoryInput.value,
     };
     if (idInput.value) {
       await updateEntry(idInput.value, payload);
@@ -195,6 +288,33 @@ export function initWishlist() {
   });
 
   cancelBtn.addEventListener('click', resetForm);
+
+  // "Surprise me": highlight a random place from the Want to Try list.
+  function surprise() {
+    const entries = [...unvisitedList.querySelectorAll('.entry')];
+    if (entries.length === 0) return;
+    const pick = entries[Math.floor(Math.random() * entries.length)];
+    entries.forEach((e) => e.classList.remove('surprise-flash'));
+    pick.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    pick.classList.add('surprise-flash');
+    setTimeout(() => pick.classList.remove('surprise-flash'), 2000);
+  }
+  surpriseBtn.addEventListener('click', surprise);
+
+  // Type-ahead search: choosing a real restaurant autofills name + address and
+  // stores its coordinates. Typing the name by hand clears any stale location.
+  attachPlaceSearch(nameInput, placeResults, (place) => {
+    nameInput.value = place.name;
+    locationInput.value = place.address;
+    latInput.value = place.lat;
+    lonInput.value = place.lon;
+    categoryInput.value = place.category;
+  });
+  nameInput.addEventListener('input', () => {
+    latInput.value = '';
+    lonInput.value = '';
+    categoryInput.value = '';
+  });
 
   return {
     setUser(user) {

@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="css/profile.css" />
     <link rel="stylesheet" href="css/wishlist.css" />
     <link rel="stylesheet" href="css/browse.css" />
+    <link rel="stylesheet" href="css/places.css" />
     <link rel="stylesheet" href="css/modal.css" />
   </head>
   <body>
@@ -176,15 +177,25 @@
             <h2 id="form-heading">Add a Restaurant</h2>
             <form id="wishlist-form">
               <input type="hidden" id="entry-id" />
+              <input type="hidden" id="entry-lat" />
+              <input type="hidden" id="entry-lon" />
+              <input type="hidden" id="entry-category" />
               <div class="row">
                 <div class="col-12 col-sm-6 mb-3">
                   <label class="form-label" for="entry-name">Name</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="entry-name"
-                    required
-                  />
+                  <div class="place-search">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="entry-name"
+                      autocomplete="off"
+                      required
+                    />
+                    <div id="place-results" class="place-results hidden"></div>
+                  </div>
+                  <div class="form-text">
+                    Type to search real restaurants (OpenStreetMap).
+                  </div>
                 </div>
                 <div class="col-12 col-sm-6 mb-3">
                   <label class="form-label" for="entry-cuisine">Cuisine</label>
@@ -239,7 +250,18 @@
         </div>
 
         <div class="mb-4">
-          <h2 class="border-bottom pb-2 mb-3">Want to Try</h2>
+          <div
+            class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3"
+          >
+            <h2 class="mb-0">Want to Try</h2>
+            <button
+              type="button"
+              id="surprise-btn"
+              class="btn btn-sm btn-outline-secondary"
+            >
+              🎲 Surprise me
+            </button>
+          </div>
           <ul id="unvisited-list" class="list-unstyled mb-0"></ul>
         </div>
 

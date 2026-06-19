@@ -40,6 +40,12 @@ single-responsibility modules.
   add the custom theme. No Bootstrap JS is used — all interactivity is vanilla.
 - **Backend:** Node.js + Express
 - **Database:** MongoDB (collections: `users`, `restaurants`, `wishlists`)
+- **Maps & search:** [OpenStreetMap](https://www.openstreetmap.org) — the
+  [Photon](https://photon.komoot.io) geocoder powers live restaurant search /
+  address autofill, and an embedded OSM map shows each saved place on a pin.
+- **Weather:** live conditions at each saved restaurant via
+  [Open-Meteo](https://open-meteo.com). All of the above are free and need **no
+  API key**.
 
 ## Project Structure
 
@@ -61,12 +67,15 @@ single-responsibility modules.
     │   ├── profile.css
     │   ├── wishlist.css
     │   ├── browse.css
+    │   ├── places.css
     │   └── modal.css
     └── js/                # One module per concern
         ├── api.js         # Fetch wrapper
         ├── profile.js     # Account auth (sign in / register / sign out)
-        ├── wishlist.js    # Wishlist UI
+        ├── wishlist.js    # Wishlist UI (+ map rendering)
         ├── browse.js      # View/save other wishlist entries UI
+        ├── places.js      # OpenStreetMap restaurant search (autofill)
+        ├── weather.js     # Open-Meteo current-weather lookups
         ├── modal.js       # Reusable confirm / review dialog
         └── main.js        # Wires the modules together
 ```
@@ -109,11 +118,16 @@ single-responsibility modules.
 1. Create an account with a display name, username, and password - or sign back
    in with your username and password. Passwords are hashed (scrypt) before
    being stored; the raw password is never saved.
-2. Add restaurants to your wishlist with a name, cuisine, location, and notes.
+2. Add restaurants to your wishlist. Start typing a name to search **real
+   restaurants** via OpenStreetMap — pick one to autofill its address and drop a
+   map pin on the entry — or just type the details in by hand.
 3. Edit or delete any entry.
 4. Mark a restaurant as visited and optionally add a short review - it moves to
    the **Visited** section.
 5. Browse other users' wishlists, and save any wishlist entry into your own wishlist.
+6. Saved places with a location show a **map**, their **category**, and the
+   **current weather** there. Can't decide? Hit **🎲 Surprise me** to pick a
+   random spot from your Want to Try list.
 
 ## Deployment (Render)
 
