@@ -8,7 +8,8 @@
     "start": "node server.js",
     "dev": "node --watch server.js",
     "format": "prettier --write .",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "seed": "node scripts/seed.js"
   },
   "license": "MIT",
   "author": "Sumer Shinde",
