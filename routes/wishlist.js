@@ -9,6 +9,23 @@ function toObjectId(id) {
   return ObjectId.isValid(id) ? new ObjectId(id) : null;
 }
 
+// Pull optional map data (from the OpenStreetMap search) out of the request.
+// Returns valid coordinates + category, or nulls when none were provided.
+function geoFields(body) {
+  const lat = Number(body.lat);
+  const lon = Number(body.lon);
+  const hasCoords =
+    Number.isFinite(lat) &&
+    Number.isFinite(lon) &&
+    Math.abs(lat) <= 90 &&
+    Math.abs(lon) <= 180;
+  return {
+    lat: hasCoords ? lat : null,
+    lon: hasCoords ? lon : null,
+    category: (body.category || '').trim(),
+  };
+}
+
 // US-01: List a user's wishlist, joining each entry with its restaurant.
 router.get('/', async (req, res) => {
   const userId = toObjectId(req.query.userId);
@@ -50,7 +67,13 @@ router.post('/', async (req, res) => {
       .json({ error: 'A valid userId and a restaurant name are required.' });
   }
 
-  const restaurant = { name, cuisine, location, createdAt: new Date() };
+  const restaurant = {
+    name,
+    cuisine,
+    location,
+    ...geoFields(req.body),
+    createdAt: new Date(),
+  };
   const { insertedId: restaurantId } = await collections
     .restaurants()
     .insertOne(restaurant);
@@ -92,6 +115,7 @@ router.put('/:id', async (req, res) => {
         name,
         cuisine: (req.body.cuisine || '').trim(),
         location: (req.body.location || '').trim(),
+        ...geoFields(req.body),
       },
     }
   );
@@ -174,6 +198,9 @@ router.post('/save', async (req, res) => {
     name: source.name,
     cuisine: source.cuisine,
     location: source.location,
+    lat: source.lat ?? null,
+    lon: source.lon ?? null,
+    category: source.category || '',
     createdAt: new Date(),
   };
   const { insertedId: newRestaurantId } = await collections

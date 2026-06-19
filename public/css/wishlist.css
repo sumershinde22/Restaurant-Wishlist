@@ -29,6 +29,53 @@
   font-size: 0.88rem;
 }
 
+.entry-category {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+.entry-weather {
+  margin: 0.3rem 0 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+@keyframes surprise-flash {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(138, 36, 51, 0);
+  }
+  30% {
+    box-shadow: 0 0 0 4px rgba(138, 36, 51, 0.35);
+  }
+}
+
+.entry.surprise-flash {
+  animation: surprise-flash 1s ease-in-out 2;
+  border-color: var(--accent);
+}
+
+.entry-map {
+  display: block;
+  margin-top: 0.75rem;
+}
+
+.entry-map iframe {
+  width: 100%;
+  height: 180px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+.entry-map-link {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.82rem;
+  color: var(--accent);
+}
+
 .entry-review {
   margin-top: 0.6rem;
   font-style: italic;
