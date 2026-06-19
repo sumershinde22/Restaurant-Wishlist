@@ -11,9 +11,17 @@ const userSearch = document.getElementById('user-search');
 const overlay = document.getElementById('modal-overlay');
 const panel = document.getElementById('modal-panel');
 
+const browsePagination = document.getElementById('browse-pagination');
+const browsePrev = document.getElementById('browse-prev');
+const browseNext = document.getElementById('browse-next');
+const browsePageText = document.getElementById('browse-page-text');
+
+const PAGE_SIZE = 10;
+
 export function initBrowse(wishlist) {
   let currentUser = null;
   let allUsers = [];
+  let currentPage = 1;
 
   async function refresh() {
     const users = await getBrowseUsers();
@@ -24,6 +32,7 @@ export function initBrowse(wishlist) {
   // Filter the browsable users by the search box (name or @username).
   function renderFiltered() {
     const q = userSearch.value.trim().toLowerCase();
+
     const filtered = q
       ? allUsers.filter(
           (u) =>
@@ -31,18 +40,41 @@ export function initBrowse(wishlist) {
             u.username.toLowerCase().includes(q)
         )
       : allUsers;
-    renderUsers(filtered);
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+    }
+
+    renderUsers(filtered, totalPages);
   }
 
-  userSearch.addEventListener('input', renderFiltered);
+  userSearch.addEventListener('input', () => {
+    currentPage = 1;
+    renderFiltered();
+  });
 
-  function renderUsers(users) {
+  function renderUsers(users, totalPages) {
     browseBody.innerHTML = '';
-    browseEmpty.classList.toggle('hidden', users.length !== 0);
 
-    for (const user of users) {
+    const hasUsers = users.length !== 0;
+    browseEmpty.classList.toggle('hidden', hasUsers);
+    browsePagination.classList.toggle('hidden', !hasUsers);
+
+    const startUserIndex = (currentPage - 1) * PAGE_SIZE;
+    const usersOnCurrentPage = users.slice(
+      startUserIndex,
+      startUserIndex + PAGE_SIZE
+    );
+
+    for (const user of usersOnCurrentPage) {
       browseBody.appendChild(renderUserRow(user));
     }
+
+    browsePageText.textContent = `Page ${currentPage} of ${totalPages}`;
+    browsePrev.disabled = currentPage === 1;
+    browseNext.disabled = currentPage === totalPages;
   }
 
   function renderUserRow(user) {
@@ -246,16 +278,31 @@ export function initBrowse(wishlist) {
     panel.innerHTML = '';
   }
 
+  browsePrev.addEventListener('click', () => {
+    if (currentPage > 1) {
+      currentPage -= 1;
+      renderFiltered();
+    }
+  });
+
+  browseNext.addEventListener('click', () => {
+    currentPage += 1;
+    renderFiltered();
+  });
+
   return {
     setUser(user) {
       currentUser = user;
       browseSection.classList.toggle('hidden', !user);
       userSearch.value = '';
+      currentPage = 1;
+
       if (user) {
         refresh();
       } else {
         allUsers = [];
         browseBody.innerHTML = '';
+        browsePagination.classList.add('hidden');
       }
     },
   };
