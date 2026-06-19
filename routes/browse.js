@@ -10,7 +10,6 @@ function publicBrowseUser(user) {
     username: user.username,
     displayName: user.displayName,
     wishlistCount: user.wishlistCount || 0,
-    wishlistUrl: `/${user._id}`,
   };
 }
 

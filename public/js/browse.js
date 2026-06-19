@@ -32,10 +32,12 @@ export function initBrowse(wishlist) {
     const row = document.createElement('tr');
 
     const username = document.createElement('td');
-    username.innerHTML = `
-      <strong>${user.displayName}</strong>
-      <span class="browse-handle d-block">@${user.username}</span>
-    `;
+    const name = document.createElement('strong');
+    name.textContent = user.displayName;
+    const handle = document.createElement('span');
+    handle.className = 'browse-handle d-block';
+    handle.textContent = '@' + user.username;
+    username.append(name, handle);
 
     const count = document.createElement('td');
     count.textContent = user.wishlistCount;
@@ -197,7 +199,7 @@ export function initBrowse(wishlist) {
     save.addEventListener('click', async () => {
       try {
         await saveEntry(currentUser._id, entry.restaurant._id);
-        save.textContent = 'Succcess: Saved!';
+        save.textContent = 'Success: Saved!';
         save.disabled = true;
         await wishlist.refresh();
       } catch (err) {
