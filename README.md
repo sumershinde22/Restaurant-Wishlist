@@ -4,6 +4,8 @@ A full-stack web app that lets food enthusiasts save, organize, and share
 restaurants they want to visit. Keep a personal wishlist of places to try, jot
 down notes, and check them off with a short review once you've been.
 
+Deployed website: https://restaurant-wishlist.onrender.com
+
 ## Author
 
 - **Sumer Shinde** - US-01 (profile & wishlist CRUD) and US-02 (mark as visited)
