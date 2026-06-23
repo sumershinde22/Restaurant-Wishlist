@@ -56,9 +56,11 @@ single-responsibility modules.
 │   └── connection.js      # MongoDB connector module
 ├── utils/
 │   └── password.js        # Password hashing (scrypt) module
+├── scripts/
+│   └── seed.js            # Seeds the DB with 1000+ sample documents
 ├── routes/
 │   ├── users.js           # Register + login endpoints (US-01)
-│   └── wishlist.js        # Wishlist CRUD + visited (US-01, US-02)
+│   ├── wishlist.js        # Wishlist CRUD + visited (US-01, US-02)
 │   └── browse.js          # View/save other wishlist entries (US-03, US-04)
 └── public/
     ├── index.html
@@ -105,13 +107,24 @@ single-responsibility modules.
    `wishlists` (they are created automatically on first write if they don't
    exist).
 
-3. **Start the server:**
+3. **(Optional) Seed the database** with sample data (100 users, 450
+   restaurants, 450 wishlist entries — 1000+ records total). This wipes the
+   three collections first:
+
+   ```bash
+   npm run seed
+   ```
+
+   All seeded accounts share the password `wishlist123`, so you can log in as
+   any of them to explore a populated wishlist.
+
+4. **Start the server:**
 
    ```bash
    npm start          # or: npm run dev   (auto-restart on changes)
    ```
 
-4. Open <http://localhost:3000> in your browser.
+5. Open <http://localhost:3000> in your browser.
 
 ## Usage
 
@@ -149,12 +162,14 @@ To deploy on [Render](https://render.com):
 4. Deploy. Render builds the service and serves it at a public `*.onrender.com`
    URL.
 
-## Formatting
-
-The codebase is formatted with [Prettier](https://prettier.io):
+## Scripts
 
 ```bash
-npm run format
+npm start        # run the server
+npm run dev      # run with auto-restart on changes
+npm run seed     # reset + load 1000+ sample records
+npm run format   # format with Prettier
+npm run lint     # check with ESLint
 ```
 
 ## License
