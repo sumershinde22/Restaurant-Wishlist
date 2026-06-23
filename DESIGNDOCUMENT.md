@@ -1,4 +1,4 @@
-# [ProjectProposal] @John Alexis Guerra Gomez (Teacher)
+# Project 2 Design Document
 
 ## Project 2 Name
 
