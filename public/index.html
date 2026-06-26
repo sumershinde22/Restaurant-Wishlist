@@ -29,6 +29,7 @@
         <span class="brand-mark">✦</span>
         <span>Restaurant Wishlist</span>
       </div>
+
       <div
         id="user-menu"
         class="user-menu d-flex align-items-center gap-3 hidden"
@@ -40,6 +41,7 @@
             <span id="user-handle" class="user-handle"></span>
           </span>
         </div>
+
         <button
           type="button"
           id="signout-btn"
@@ -71,6 +73,7 @@
               >
                 Sign In
               </button>
+
               <button type="button" class="auth-tab" data-tab="register">
                 Create Account
               </button>
@@ -87,6 +90,7 @@
                   required
                 />
               </div>
+
               <div class="mb-3">
                 <label class="form-label" for="signin-password">Password</label>
                 <div class="input-group">
@@ -97,6 +101,7 @@
                     autocomplete="current-password"
                     required
                   />
+
                   <button
                     type="button"
                     class="btn btn-outline-secondary password-toggle"
@@ -107,6 +112,7 @@
                   </button>
                 </div>
               </div>
+
               <button type="submit" class="btn btn-primary w-100">
                 Sign In
               </button>
@@ -124,6 +130,7 @@
                   required
                 />
               </div>
+
               <div class="mb-3">
                 <label class="form-label" for="register-username">
                   Username
@@ -136,6 +143,7 @@
                   required
                 />
               </div>
+
               <div class="mb-3">
                 <label class="form-label" for="register-password">
                   Password
@@ -146,9 +154,10 @@
                     class="form-control"
                     id="register-password"
                     autocomplete="new-password"
-                    minlength="6"
+                    minlength="8"
                     required
                   />
+
                   <button
                     type="button"
                     class="btn btn-outline-secondary password-toggle"
@@ -158,8 +167,10 @@
                     Show
                   </button>
                 </div>
-                <div class="form-text">At least 6 characters.</div>
+
+                <div class="form-text">At least 8 characters.</div>
               </div>
+
               <button type="submit" class="btn btn-primary w-100">
                 Create Account
               </button>
@@ -175,11 +186,13 @@
         <div class="card shadow-sm mb-4">
           <div class="card-body p-4">
             <h2 id="form-heading">Add a Restaurant</h2>
+
             <form id="wishlist-form">
               <input type="hidden" id="entry-id" />
               <input type="hidden" id="entry-lat" />
               <input type="hidden" id="entry-lon" />
               <input type="hidden" id="entry-category" />
+
               <div class="row">
                 <div class="col-12 col-sm-6 mb-3">
                   <label class="form-label" for="entry-name">Name</label>
@@ -193,20 +206,24 @@
                     />
                     <div id="place-results" class="place-results hidden"></div>
                   </div>
+
                   <div class="form-text">
-                    Type to search real restaurants (OpenStreetMap).
+                    Type to search real restaurants OpenStreetMap.
                   </div>
                 </div>
+
                 <div class="col-12 col-sm-6 mb-3">
                   <label class="form-label" for="entry-cuisine">Cuisine</label>
                   <input type="text" class="form-control" id="entry-cuisine" />
                 </div>
+
                 <div class="col-12 col-sm-6 mb-3">
-                  <label class="form-label" for="entry-location"
-                    >Location</label
-                  >
+                  <label class="form-label" for="entry-location">
+                    Location
+                  </label>
                   <input type="text" class="form-control" id="entry-location" />
                 </div>
+
                 <div class="col-12 col-sm-6 mb-3">
                   <label class="form-label" for="entry-notes">Notes</label>
                   <textarea
@@ -216,10 +233,12 @@
                   ></textarea>
                 </div>
               </div>
+
               <div class="d-flex gap-2">
                 <button type="submit" id="entry-submit" class="btn btn-primary">
                   Add to wishlist
                 </button>
+
                 <button
                   type="button"
                   id="entry-cancel"
@@ -241,6 +260,7 @@
               </div>
             </div>
           </div>
+
           <div class="col">
             <div class="card text-center shadow-sm">
               <div class="card-body">
@@ -256,6 +276,7 @@
             class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3"
           >
             <h2 class="mb-0">Want to Try</h2>
+
             <button
               type="button"
               id="surprise-btn"
@@ -264,6 +285,7 @@
               🎲 Surprise me
             </button>
           </div>
+
           <ul id="unvisited-list" class="list-unstyled mb-0"></ul>
         </div>
 
@@ -275,6 +297,7 @@
         <!-- Signed-in view: browse other users' wishlists (US-03). -->
         <div class="mb-4">
           <h2 class="border-bottom pb-2 mb-3">Discover New Restaurants</h2>
+
           <div id="browse-section" class="browse-card">
             <div
               class="p-4 border-bottom d-flex flex-wrap gap-3 justify-content-between align-items-center"
@@ -282,6 +305,7 @@
               <p class="text-secondary mb-0">
                 Browse restaurants other users have wishlisted.
               </p>
+
               <input
                 type="search"
                 id="user-search"
@@ -300,6 +324,7 @@
                     <th></th>
                   </tr>
                 </thead>
+
                 <tbody id="browse-body"></tbody>
               </table>
             </div>
