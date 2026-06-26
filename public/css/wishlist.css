@@ -56,6 +56,7 @@
   font-size: 0.85rem;
 }
 
+/* I love this UI touch. Adding a subtle pulse animation for the "Surprise me" feature makes the app feel very polished and interactive. */
 @keyframes surprise-flash {
   0%,
   100% {
