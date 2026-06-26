@@ -23,6 +23,9 @@ export function initBrowse(wishlist) {
   let allUsers = [];
   let currentPage = 1;
 
+  // I think for the scope of this project, fetching all users and filtering/paginating them on the client side works perfectly. 
+  // However if this app were to scale to thousands of users, I'd want to move this search logic to the backend API to save bandwidth and browser memory. 
+  // Just a thought for future scaling!
   async function refresh() {
     const users = await getBrowseUsers();
     allUsers = users.filter((user) => user._id !== currentUser._id);
