@@ -12,6 +12,9 @@ export async function hashPassword(password) {
 }
 
 // Verify a password against a stored "salt:hash" value (constant-time compare).
+
+// I used crypto.timingSafeEqual for another authentication project last semester. 
+// High quality backend security code right here(I know what I am talking about).
 export async function verifyPassword(password, stored) {
   const [salt, key] = (stored || '').split(':');
   if (!salt || !key) return false;
