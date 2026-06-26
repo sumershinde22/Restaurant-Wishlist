@@ -9,8 +9,38 @@ function toObjectId(id) {
   return ObjectId.isValid(id) ? new ObjectId(id) : null;
 }
 
-// Pull optional map data (from the OpenStreetMap search) out of the request.
-// Returns valid coordinates + category, or nulls when none were provided.
+function readText(value, maxLength, label) {
+  const text = typeof value === 'string' ? value.trim() : '';
+  if (text.length > maxLength) {
+    return { error: `${label} must be ${maxLength} characters or less.` };
+  }
+  return { value: text };
+}
+
+function readRestaurantInput(body) {
+  const name = readText(body.name, 80, 'Restaurant name');
+  const cuisine = readText(body.cuisine, 40, 'Cuisine');
+  const location = readText(body.location, 120, 'Location');
+  const notes = readText(body.notes, 300, 'Notes');
+
+  const error = name.error || cuisine.error || location.error || notes.error;
+  if (error) return { error };
+
+  return {
+    name: name.value,
+    cuisine: cuisine.value,
+    location: location.value,
+    notes: notes.value,
+  };
+}
+
+function readReview(body) {
+  const review = readText(body.review, 500, 'Review');
+  if (review.error) return review;
+  return { value: review.value };
+}
+
+// Pull optional map data from the OpenStreetMap search.
 function geoFields(body) {
   const lat = Number(body.lat);
   const lon = Number(body.lon);
@@ -19,14 +49,15 @@ function geoFields(body) {
     Number.isFinite(lon) &&
     Math.abs(lat) <= 90 &&
     Math.abs(lon) <= 180;
+
   return {
     lat: hasCoords ? lat : null,
     lon: hasCoords ? lon : null,
-    category: (body.category || '').trim(),
+    category: (body.category || '').trim().slice(0, 60),
   };
 }
 
-// US-01: List a user's wishlist, joining each entry with its restaurant.
+// US-01: List a user's wishlist.
 router.get('/', async (req, res) => {
   const userId = toObjectId(req.query.userId);
   if (!userId) {
@@ -53,27 +84,26 @@ router.get('/', async (req, res) => {
   res.json(entries);
 });
 
-// US-01: Add a restaurant to the wishlist (creates a restaurant + a wishlist entry).
+// US-01: Add a restaurant to the wishlist.
 router.post('/', async (req, res) => {
   const userId = toObjectId(req.body.userId);
-  const name = (req.body.name || '').trim();
-  const cuisine = (req.body.cuisine || '').trim();
-  const location = (req.body.location || '').trim();
-  const notes = (req.body.notes || '').trim();
+  const fields = readRestaurantInput(req.body);
 
-  if (!userId || !name) {
-    return res
-      .status(400)
-      .json({ error: 'A valid userId and a restaurant name are required.' });
+  if (!userId || fields.error || !fields.name) {
+    return res.status(400).json({
+      error:
+        fields.error || 'A valid userId and a restaurant name are required.',
+    });
   }
 
   const restaurant = {
-    name,
-    cuisine,
-    location,
+    name: fields.name,
+    cuisine: fields.cuisine,
+    location: fields.location,
     ...geoFields(req.body),
     createdAt: new Date(),
   };
+
   const { insertedId: restaurantId } = await collections
     .restaurants()
     .insertOne(restaurant);
@@ -81,92 +111,114 @@ router.post('/', async (req, res) => {
   const entry = {
     userId,
     restaurantId,
-    notes,
+    notes: fields.notes,
     visited: false,
     review: '',
     createdAt: new Date(),
   };
+
   const { insertedId } = await collections.wishlists().insertOne(entry);
 
   res.status(201).json({ _id: insertedId, ...entry, restaurant });
 });
 
-// US-01: Edit a wishlist entry's notes and its restaurant details.
+// US-01: Edit a wishlist entry.
 router.put('/:id', async (req, res) => {
   const id = toObjectId(req.params.id);
-  if (!id) {
-    return res.status(400).json({ error: 'A valid entry id is required.' });
+  const userId = toObjectId(req.body.userId);
+
+  if (!id || !userId) {
+    return res
+      .status(400)
+      .json({ error: 'A valid entry id and userId are required.' });
   }
 
-  const entry = await collections.wishlists().findOne({ _id: id });
+  // Only allow the owner of the wishlist entry to edit it.
+  const entry = await collections.wishlists().findOne({ _id: id, userId });
   if (!entry) {
     return res.status(404).json({ error: 'Wishlist entry not found.' });
   }
 
-  const name = (req.body.name || '').trim();
-  if (!name) {
-    return res.status(400).json({ error: 'A restaurant name is required.' });
+  const fields = readRestaurantInput(req.body);
+  if (fields.error || !fields.name) {
+    return res
+      .status(400)
+      .json({ error: fields.error || 'A restaurant name is required.' });
   }
 
   await collections.restaurants().updateOne(
     { _id: entry.restaurantId },
     {
       $set: {
-        name,
-        cuisine: (req.body.cuisine || '').trim(),
-        location: (req.body.location || '').trim(),
+        name: fields.name,
+        cuisine: fields.cuisine,
+        location: fields.location,
         ...geoFields(req.body),
       },
     }
   );
+
   await collections
     .wishlists()
-    .updateOne({ _id: id }, { $set: { notes: (req.body.notes || '').trim() } });
+    .updateOne({ _id: id, userId }, { $set: { notes: fields.notes } });
 
   res.json({ ok: true });
 });
 
-// US-02: Mark an entry as visited (or not) and optionally add a review.
+// US-02: Mark an entry as visited or not visited.
 router.patch('/:id/visited', async (req, res) => {
   const id = toObjectId(req.params.id);
-  if (!id) {
-    return res.status(400).json({ error: 'A valid entry id is required.' });
+  const userId = toObjectId(req.body.userId);
+
+  if (!id || !userId) {
+    return res
+      .status(400)
+      .json({ error: 'A valid entry id and userId are required.' });
   }
 
   const visited = Boolean(req.body.visited);
-  const review = visited ? (req.body.review || '').trim() : '';
+  const review = visited ? readReview(req.body) : { value: '' };
 
+  if (review.error) {
+    return res.status(400).json({ error: review.error });
+  }
+
+  // Only allow the owner to update visited/review status.
   const result = await collections
     .wishlists()
-    .updateOne({ _id: id }, { $set: { visited, review } });
+    .updateOne({ _id: id, userId }, { $set: { visited, review: review.value } });
 
   if (result.matchedCount === 0) {
     return res.status(404).json({ error: 'Wishlist entry not found.' });
   }
+
   res.json({ ok: true });
 });
 
-// US-01: Remove a wishlist entry and the restaurant it points to.
+// US-01: Remove a wishlist entry.
 router.delete('/:id', async (req, res) => {
   const id = toObjectId(req.params.id);
-  if (!id) {
-    return res.status(400).json({ error: 'A valid entry id is required.' });
+  const userId = toObjectId(req.body.userId);
+
+  if (!id || !userId) {
+    return res
+      .status(400)
+      .json({ error: 'A valid entry id and userId are required.' });
   }
 
-  const entry = await collections.wishlists().findOne({ _id: id });
+  // Only allow the owner of the wishlist entry to delete it.
+  const entry = await collections.wishlists().findOne({ _id: id, userId });
   if (!entry) {
     return res.status(404).json({ error: 'Wishlist entry not found.' });
   }
 
   await collections.restaurants().deleteOne({ _id: entry.restaurantId });
-  await collections.wishlists().deleteOne({ _id: id });
+  await collections.wishlists().deleteOne({ _id: id, userId });
 
   res.json({ ok: true });
 });
 
 // US-04: Save a wishlist entry from another person's wishlist to my wishlist.
-// The restaurant is cloned so each wishlist owns its own copy — editing or
-// deleting a saved entry never affects the original owner's wishlist.
 router.post('/save', async (req, res) => {
   const userId = toObjectId(req.body.userId);
   const restaurantId = toObjectId(req.body.restaurantId);
@@ -182,18 +234,16 @@ router.post('/save', async (req, res) => {
     return res.status(404).json({ error: 'Restaurant not found.' });
   }
 
-  // Reject if this user already saved this same source restaurant. Keyed on the
-  // source id (not the name) so it stays correct even after the copy is renamed.
   const existing = await collections
     .wishlists()
     .findOne({ userId, savedFrom: restaurantId });
+
   if (existing) {
     return res
       .status(409)
       .json({ error: 'This restaurant is already on your wishlist.' });
   }
 
-  // Clone the restaurant, then point a fresh wishlist entry at the copy.
   const restaurant = {
     name: source.name,
     cuisine: source.cuisine,
@@ -203,6 +253,7 @@ router.post('/save', async (req, res) => {
     category: source.category || '',
     createdAt: new Date(),
   };
+
   const { insertedId: newRestaurantId } = await collections
     .restaurants()
     .insertOne(restaurant);
@@ -216,6 +267,7 @@ router.post('/save', async (req, res) => {
     review: '',
     createdAt: new Date(),
   };
+
   const { insertedId } = await collections.wishlists().insertOne(entry);
 
   res.status(201).json({
