@@ -46,16 +46,20 @@ export function updateEntry(id, payload) {
   });
 }
 
-export function setVisited(id, visited, review) {
+export function setVisited(id, userId, visited, review) {
   return request('/api/wishlist/' + id + '/visited', {
     method: 'PATCH',
     headers: jsonHeaders,
-    body: JSON.stringify({ visited, review }),
+    body: JSON.stringify({ userId, visited, review }),
   });
 }
 
-export function deleteEntry(id) {
-  return request('/api/wishlist/' + id, { method: 'DELETE' });
+export function deleteEntry(id, userId) {
+  return request('/api/wishlist/' + id, {
+    method: 'DELETE',
+    headers: jsonHeaders,
+    body: JSON.stringify({ userId }),
+  });
 }
 
 export function getBrowseUsers() {
