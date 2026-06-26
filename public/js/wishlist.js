@@ -34,13 +34,15 @@ export function initWishlist() {
 
   async function refresh() {
     if (!currentUser) return;
+
     const entries = await getWishlist(currentUser._id);
-    const unvisited = entries.filter((e) => !e.visited);
-    const visited = entries.filter((e) => e.visited);
+    const unvisited = entries.filter((entry) => !entry.visited);
+    const visited = entries.filter((entry) => entry.visited);
 
     statUnvisited.textContent = unvisited.length;
     statVisited.textContent = visited.length;
     surpriseBtn.disabled = unvisited.length === 0;
+
     renderList(
       unvisitedList,
       unvisited,
@@ -54,21 +56,26 @@ export function initWishlist() {
   // batched request, then fill in each card's placeholder.
   async function updateWeather() {
     const nodes = [...document.querySelectorAll('.entry-weather[data-lat]')];
+
     if (nodes.length === 0) return;
-    const points = nodes.map((n) => ({
-      lat: n.dataset.lat,
-      lon: n.dataset.lon,
+
+    const points = nodes.map((node) => ({
+      lat: node.dataset.lat,
+      lon: node.dataset.lon,
     }));
+
     let results;
+
     try {
       results = await getWeather(points);
     } catch {
-      nodes.forEach((n) => n.remove());
+      nodes.forEach((node) => node.remove());
       return;
     }
-    nodes.forEach((node, i) => {
-      if (results[i]) {
-        node.textContent = weatherText(results[i]);
+
+    nodes.forEach((node, index) => {
+      if (results[index]) {
+        node.textContent = weatherText(results[index]);
       } else {
         node.remove();
       }
@@ -77,6 +84,7 @@ export function initWishlist() {
 
   function renderList(listEl, entries, emptyText) {
     listEl.innerHTML = '';
+
     if (entries.length === 0) {
       const li = document.createElement('li');
       li.className = 'entry-empty';
@@ -84,6 +92,7 @@ export function initWishlist() {
       listEl.appendChild(li);
       return;
     }
+
     for (const entry of entries) {
       listEl.appendChild(renderEntry(entry));
     }
@@ -106,6 +115,7 @@ export function initWishlist() {
     } else if (entry.restaurant.cuisine) {
       head.appendChild(makeBadge(entry.restaurant.cuisine, 'badge-cuisine'));
     }
+
     li.appendChild(head);
 
     if (entry.restaurant.location) {
@@ -148,6 +158,7 @@ export function initWishlist() {
 
     const actions = document.createElement('div');
     actions.className = 'd-flex flex-wrap gap-2 mt-3';
+
     actions.appendChild(
       makeButton(
         entry.visited ? 'Mark as not visited' : 'Mark visited',
@@ -155,14 +166,17 @@ export function initWishlist() {
         () => toggleVisited(entry)
       )
     );
+
     actions.appendChild(
       makeButton('Edit', 'btn btn-sm btn-outline-secondary', () =>
         startEdit(entry)
       )
     );
+
     actions.appendChild(
       makeButton('Delete', 'btn btn-sm btn-outline-danger', () => remove(entry))
     );
+
     li.appendChild(actions);
 
     if (entry.restaurant.lat != null && entry.restaurant.lon != null) {
@@ -219,13 +233,16 @@ export function initWishlist() {
 
   async function toggleVisited(entry) {
     if (entry.visited) {
-      await setVisited(entry._id, false, '');
+      await setVisited(entry._id, currentUser._id, false, '');
       await refresh();
       return;
     }
+
     const review = await reviewDialog(entry.review || '');
-    if (review === null) return; // cancelled
-    await setVisited(entry._id, true, review);
+
+    if (review === null) return;
+
+    await setVisited(entry._id, currentUser._id, true, review);
     await refresh();
   }
 
@@ -238,6 +255,7 @@ export function initWishlist() {
     latInput.value = entry.restaurant.lat ?? '';
     lonInput.value = entry.restaurant.lon ?? '';
     categoryInput.value = entry.restaurant.category || '';
+
     formHeading.textContent = 'Edit Restaurant';
     submitBtn.textContent = 'Save changes';
     cancelBtn.classList.remove('hidden');
@@ -250,6 +268,7 @@ export function initWishlist() {
     latInput.value = '';
     lonInput.value = '';
     categoryInput.value = '';
+
     formHeading.textContent = 'Add a Restaurant';
     submitBtn.textContent = 'Add to wishlist';
     cancelBtn.classList.add('hidden');
@@ -262,13 +281,16 @@ export function initWishlist() {
       confirmLabel: 'Remove',
       danger: true,
     });
+
     if (!confirmed) return;
-    await deleteEntry(entry._id);
+
+    await deleteEntry(entry._id, currentUser._id);
     await refresh();
   }
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+
     const payload = {
       name: nameInput.value,
       cuisine: cuisineInput.value,
@@ -278,11 +300,19 @@ export function initWishlist() {
       lon: lonInput.value,
       category: categoryInput.value,
     };
+
     if (idInput.value) {
-      await updateEntry(idInput.value, payload);
+      await updateEntry(idInput.value, {
+        userId: currentUser._id,
+        ...payload,
+      });
     } else {
-      await addEntry({ userId: currentUser._id, ...payload });
+      await addEntry({
+        userId: currentUser._id,
+        ...payload,
+      });
     }
+
     resetForm();
     await refresh();
   });
@@ -292,13 +322,18 @@ export function initWishlist() {
   // "Surprise me": highlight a random place from the Want to Try list.
   function surprise() {
     const entries = [...unvisitedList.querySelectorAll('.entry')];
+
     if (entries.length === 0) return;
+
     const pick = entries[Math.floor(Math.random() * entries.length)];
-    entries.forEach((e) => e.classList.remove('surprise-flash'));
+
+    entries.forEach((entry) => entry.classList.remove('surprise-flash'));
     pick.scrollIntoView({ behavior: 'smooth', block: 'center' });
     pick.classList.add('surprise-flash');
+
     setTimeout(() => pick.classList.remove('surprise-flash'), 2000);
   }
+
   surpriseBtn.addEventListener('click', surprise);
 
   // Type-ahead search: choosing a real restaurant autofills name + address and
@@ -310,6 +345,7 @@ export function initWishlist() {
     lonInput.value = place.lon;
     categoryInput.value = place.category;
   });
+
   nameInput.addEventListener('input', () => {
     latInput.value = '';
     lonInput.value = '';
@@ -320,6 +356,7 @@ export function initWishlist() {
     setUser(user) {
       currentUser = user;
       resetForm();
+
       if (user) {
         refresh();
       } else {
@@ -329,6 +366,7 @@ export function initWishlist() {
         statVisited.textContent = '0';
       }
     },
+
     refresh() {
       return refresh();
     },
