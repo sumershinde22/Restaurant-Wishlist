@@ -14,7 +14,7 @@ function publicUser(user) {
   };
 }
 
-// US-01: Register a new account.
+// Register a new account.
 router.post('/', async (req, res) => {
   const username = (req.body.username || '').trim().toLowerCase();
   const displayName = (req.body.displayName || '').trim();
@@ -25,16 +25,24 @@ router.post('/', async (req, res) => {
       .status(400)
       .json({ error: 'Username and display name are required.' });
   }
+
   if (!/^[a-z0-9_]{3,20}$/.test(username)) {
     return res.status(400).json({
       error:
         'Username must be 3-20 lowercase letters, numbers, or underscores.',
     });
   }
-  if (password.length < 6) {
+
+  if (displayName.length > 50) {
     return res
       .status(400)
-      .json({ error: 'Password must be at least 6 characters.' });
+      .json({ error: 'Display name must be 50 characters or less.' });
+  }
+
+  if (password.length < 8) {
+    return res
+      .status(400)
+      .json({ error: 'Password must be at least 8 characters.' });
   }
 
   const existing = await collections.users().findOne({ username });
@@ -48,11 +56,12 @@ router.post('/', async (req, res) => {
     passwordHash: await hashPassword(password),
     createdAt: new Date(),
   };
+
   const result = await collections.users().insertOne(user);
   res.status(201).json(publicUser({ _id: result.insertedId, ...user }));
 });
 
-// US-01: Sign in to an existing account.
+// Sign in to an existing account.
 router.post('/login', async (req, res) => {
   const username = (req.body.username || '').trim().toLowerCase();
   const password = req.body.password || '';
