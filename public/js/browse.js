@@ -247,6 +247,8 @@ export function initBrowse(wishlist) {
     const actions = document.createElement('div');
     actions.className = 'd-flex flex-wrap gap-2 mt-3';
 
+    // Good job catching the error, but displaying "err.message" directly inside the button text might lead to UI overflow if the backend error string is long. 
+    // You might want to use a toast notification or a dedicated error span nearby instead (I found this while doing my project).
     const save = document.createElement('button');
     save.type = 'button';
     save.className = 'btn btn-sm btn-primary';
@@ -258,7 +260,7 @@ export function initBrowse(wishlist) {
         save.disabled = true;
         await wishlist.refresh();
       } catch (err) {
-        save.textContent = err.message;
+        save.textContent = err.message; 
         save.disabled = true;
       }
     });
